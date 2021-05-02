@@ -29,13 +29,13 @@ parser_definition() {
   disp    VERSION    --version
 }
 
-eval "$(getoptions parser_definition) exit 1"
+eval "$(getoptions parser_definition -) exit 1"
 
 echo "FLAG: $FLAG, PARAM: $PARAM, OPTION: $OPTION"
 printf '%s\n' "$@" # rest arguments
 ```
 
-It generates a simple [option parser code](#how-to-see-the-option-parser-code) internally and parses the following arguments.
+It's parses the following arguments:
 
 ```sh
 example.sh -f --flag -p VALUE --param VALUE -o --option -oVALUE --option=VALUE 1 2 3
@@ -200,7 +200,7 @@ parser_definition() {
   ...
 }
 
-eval "$(getoptions parser_definition parse) exit 1"
+eval "$(getoptions parser_definition parse "$0") exit 1"
 parse "$@"
 eval "set -- $REST"
 ```
@@ -208,8 +208,8 @@ eval "set -- $REST"
 The above code `exit 1` is the recommended option.
 This allows you to exit if the `getoptions` command is not found.
 
-If you omit the option parser name or use `-`, it will define the default option
-parser and parse arguments immediately.
+If you use `-` as the option parser name, it will define the default option parser
+and parse the arguments directly.
 
 ```sh
 parser_definition() {
@@ -217,10 +217,10 @@ parser_definition() {
   ...
 }
 
-eval "$(getoptions parser_definition) exit 1"
+eval "$(getoptions parser_definition - "$0") exit 1"
 
 # The above means the same as the following code.
-# eval "$(getoptions parser_definition getoptions_parse) exit 1"
+# eval "$(getoptions parser_definition getoptions_parse "$0") exit 1"
 # getoptions_parse "$@"
 # eval "set -- $REST"
 ```
@@ -229,7 +229,7 @@ HINT: Are you wondering why the external command can call a shell function?
 
 The external command `getoptions` will output the shell function `getoptions`.
 The external command `getoptions` will be hidden by the shell function `getoptions` that defined by `eval`,
-and the `getoptions` will be called again, so it can be call the shell function `parser_definition`.
+and the `getoptions` will be called again, so it can be call the shell function `parser_ definition`.
 
 Try running the following command to see what is output.
 
@@ -258,7 +258,7 @@ parser_definition() {
   ...
 }
 
-eval "$(getoptions parser_definition parse)"
+eval "$(getoptions parser_definition parse "$0")"
 parse "$@"
 eval "set -- $REST"
 ```
@@ -272,7 +272,7 @@ If you do not want to include getoptions in your shell scripts, you can pre-gene
 It also runs the fastest, so it suitable when you need a lot of options.
 
 ```console
-$ gengetoptions parser -f examples/parser_definition.sh parser_definition parse prog > parser.sh
+$ gengetoptions parser examples/parser_definition.sh parse prog > parser.sh
 ```
 
 ```sh
@@ -297,7 +297,9 @@ which allows you to embed the library as well as the parser.
 
 Example
 
-**example.sh**
+```console
+$ gengetoptions embed --overwrite example.sh
+```
 
 ```sh
 #!/bin/sh
@@ -317,9 +319,6 @@ parser_definition() {
 # @end
 
 # @gengetoptions parser -i parser_definition parse
-#
-#     INSERTED HERE
-#
 # @end
 
 parse "$@"
@@ -327,10 +326,6 @@ eval "set -- $REST"
 
 echo "FLAG: $FLAG, PARAM: $PARAM, OPTION: $OPTION"
 printf '%s\n' "$@" # rest arguments
-```
-
-```console
-$ gengetoptions embed --overwrite example.sh
 ```
 
 ## Benchmarks
@@ -378,7 +373,7 @@ Benchmark #1: ./example.sh --flag --param param --option=option a b c
 It is important to know what kind of code is being generated
 when the option parser is not working as expected.
 
-If you want to see the option parser code, rewrite it as follows.
+If you want to see the the option parser code, rewrite it as follows.
 
 ```sh
 # eval "$(getoptions parser_definition parse) exit 1"
