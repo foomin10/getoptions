@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC2016,SC2039
+# shellcheck disable=SC2016,SC2207
 #
 # Bash completion for gengetoptions
 #
@@ -30,7 +30,7 @@
 
 _gengetoptions()
 {
-    local cur prev words cword
+    local cur words cword
     _init_completion || return
     local command=''
 
